@@ -6,8 +6,14 @@ export interface SsmlOptions {
   slowChinese: boolean;
 }
 
-/** Slow Chinese to roughly 70% speed, the usual "listen and repeat" pace. */
-export const SLOW_CHINESE_RATE = "-30%";
+/**
+ * Learner pace for Chinese. Azure's Mandarin voices speak briskly, so a
+ * beginner needs it well below normal speed to hear each tone:
+ * ~60% inside a reply, ~50% when a single word is played on its own (tapping
+ * a word, the practice card's "Listen", the progress page).
+ */
+export const SLOW_CHINESE_RATE = "-40%";
+export const SINGLE_WORD_RATE = "-50%";
 
 export function escapeXml(text: string): string {
   return text
@@ -33,16 +39,18 @@ export function buildSsml(segments: Array<{ lang: Lang; text: string }>, options
     else runs.push({ lang: segment.lang, texts: [text] });
   }
 
+  const singleWord = runs.length === 1 && runs[0]!.lang === "zh" && runs[0]!.texts.length === 1;
   const body = runs
     .map((run) => {
       if (run.lang === "en") {
         return `<voice name="${escapeXml(options.voiceEn)}">${escapeXml(run.texts.join(" "))}</voice>`;
       }
-      const chinese = run.texts.map(escapeXml).join('<break time="300ms"/>');
-      const spoken = options.slowChinese
-        ? `<prosody rate="${SLOW_CHINESE_RATE}">${chinese}</prosody>`
-        : chinese;
-      return `<voice name="${escapeXml(options.voiceZh)}"><break time="150ms"/>${spoken}<break time="250ms"/></voice>`;
+      const chinese = run.texts.map(escapeXml).join('<break time="400ms"/>');
+      if (!options.slowChinese) {
+        return `<voice name="${escapeXml(options.voiceZh)}"><break time="150ms"/>${chinese}<break time="250ms"/></voice>`;
+      }
+      const rate = singleWord ? SINGLE_WORD_RATE : SLOW_CHINESE_RATE;
+      return `<voice name="${escapeXml(options.voiceZh)}"><break time="250ms"/><prosody rate="${rate}">${chinese}</prosody><break time="350ms"/></voice>`;
     })
     .join("");
 

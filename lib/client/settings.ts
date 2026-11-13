@@ -7,7 +7,7 @@ import { useCallback, useSyncExternalStore } from "react";
 export interface Settings {
   /** Play the tutor's replies automatically. */
   autoplay: boolean;
-  /** Speak Chinese at ~70% speed. */
+  /** Speak Chinese slowly (~60% speed in replies, ~50% for a single word). */
   slowChinese: boolean;
   /** Show pinyin above characters. */
   showPinyin: boolean;

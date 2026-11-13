@@ -9,7 +9,7 @@ A personal web app that teaches Mandarin Chinese to a complete beginner, by voic
 
 ## What it does
 
-- **Voice conversation.** Tap the mic, speak (English, Chinese, or both), and tap again. Replies are read aloud: English in an English voice, Chinese in a native Mandarin voice at about 70% speed.
+- **Voice conversation.** Tap the mic, speak (English, Chinese, or both), and tap again. Replies are read aloud: English in an English voice, Chinese in a native Mandarin voice, slowed to about 60% speed (50% when you tap a single word to hear it again).
 - **Readable Chinese.** Every Chinese word shows characters coloured by tone, pinyin above each character, and the English meaning. Tap any word to hear it again.
 - **Pronunciation practice.** When the tutor asks you to say something, a practice card appears. Your recording is scored by Azure's pronunciation assessment (overall, plus a score for each character), and the tutor coaches you on the weakest part.
 - **Progress that sticks.** Words go into a spaced-repetition schedule driven by your scores. Each new lesson starts with a snapshot of your words, what's due for review, recent weak spots, and the tutor's own notes about you (your name, goals, recurring tone mix-ups).

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildSsml, escapeXml, SLOW_CHINESE_RATE } from "@/lib/speech/ssml";
+import { buildSsml, escapeXml, SINGLE_WORD_RATE, SLOW_CHINESE_RATE } from "@/lib/speech/ssml";
 
 const voices = { voiceEn: "en-US-AvaMultilingualNeural", voiceZh: "zh-CN-XiaoxiaoNeural" };
 
@@ -15,7 +15,7 @@ describe("buildSsml", () => {
     );
     expect(ssml.startsWith('<speak version="1.0"')).toBe(true);
     expect(ssml).toContain('<voice name="en-US-AvaMultilingualNeural">Hello in Mandarin is</voice>');
-    expect(ssml).toContain(`<voice name="zh-CN-XiaoxiaoNeural"><break time="150ms"/><prosody rate="${SLOW_CHINESE_RATE}">你好</prosody>`);
+    expect(ssml).toContain(`<voice name="zh-CN-XiaoxiaoNeural"><break time="250ms"/><prosody rate="${SLOW_CHINESE_RATE}">你好</prosody>`);
     expect(ssml.match(/<voice /g)).toHaveLength(3);
   });
 
@@ -28,8 +28,17 @@ describe("buildSsml", () => {
       { ...voices, slowChinese: false },
     );
     expect(ssml.match(/<voice /g)).toHaveLength(1);
-    expect(ssml).toContain('你好<break time="300ms"/>谢谢');
+    expect(ssml).toContain('你好<break time="400ms"/>谢谢');
     expect(ssml).not.toContain("prosody");
+  });
+
+  it("plays a single word on its own even more slowly", () => {
+    const single = buildSsml([{ lang: "zh", text: "妈" }], { ...voices, slowChinese: true });
+    expect(single).toContain(`<prosody rate="${SINGLE_WORD_RATE}">妈</prosody>`);
+    expect(SINGLE_WORD_RATE).toBe("-50%");
+    expect(SLOW_CHINESE_RATE).toBe("-40%");
+    const normal = buildSsml([{ lang: "zh", text: "妈" }], { ...voices, slowChinese: false });
+    expect(normal).not.toContain("prosody");
   });
 
   it("escapes XML and skips empty segments", () => {
