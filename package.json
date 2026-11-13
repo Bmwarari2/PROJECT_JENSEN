@@ -4,7 +4,7 @@
   "private": true,
   "description": "A voice-first Mandarin tutor for complete beginners, powered by Claude and Azure Speech.",
   "engines": {
-    "node": ">=20.9"
+    "node": "22.x"
   },
   "scripts": {
     "dev": "next dev",
