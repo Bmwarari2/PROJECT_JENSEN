@@ -63,7 +63,7 @@ create table public.vocabulary (
 create index vocabulary_next_review_at_idx on public.vocabulary (next_review_at);
 
 -- ---------------------------------------------------------------------------
--- Every pronunciation attempt, with Azure's per-character scores.
+-- Every pronunciation attempt, with per-character scores.
 -- ---------------------------------------------------------------------------
 create table public.pronunciation_attempts (
   id bigint generated always as identity primary key,
@@ -77,7 +77,10 @@ create table public.pronunciation_attempts (
   accuracy_score real,
   fluency_score real,
   completeness_score real,
-  words jsonb not null default '[]'::jsonb
+  words jsonb not null default '[]'::jsonb,
+  -- 'assessment' = Azure pronunciation assessment (phoneme-level scores);
+  -- 'recognition' = clarity check from speech recognition (ElevenLabs).
+  method text not null default 'assessment' check (method in ('assessment', 'recognition'))
 );
 create index pronunciation_attempts_created_at_idx on public.pronunciation_attempts (created_at desc);
 

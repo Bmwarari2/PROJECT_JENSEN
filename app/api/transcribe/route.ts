@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { BadRequest, handleRouteError, jsonError, readWavField } from "@/lib/api";
-import { transcribe } from "@/lib/speech/azure";
+import { transcribe } from "@/lib/speech";
 import type { TranscribeResponse } from "@/lib/types";
 
 export async function POST(request: NextRequest) {

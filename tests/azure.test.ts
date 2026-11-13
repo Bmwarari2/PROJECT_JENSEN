@@ -29,7 +29,7 @@ const headersOf = (c: Call) => new Headers(c.init.headers);
 describe("Azure Speech client", () => {
   it("synthesizes with SSML, the key and an mp3 output format", async () => {
     nextResponse = () => new Response(new Uint8Array([1, 2, 3]));
-    const { synthesize } = await import("@/lib/speech/azure");
+    const { azureSynthesize: synthesize } = await import("@/lib/speech/azure");
     const audio = await synthesize([{ lang: "zh", text: "你好" }], true);
     expect(Array.from(audio)).toEqual([1, 2, 3]);
     const [call] = calls;
@@ -47,7 +47,7 @@ describe("Azure Speech client", () => {
         RecognitionStatus: "Success",
         NBest: [{ Display: "你好", PronScore: 91, AccuracyScore: 90, FluencyScore: 95, CompletenessScore: 100, Words: [] }],
       });
-    const { assessPronunciation } = await import("@/lib/speech/azure");
+    const { azureAssessPronunciation: assessPronunciation } = await import("@/lib/speech/azure");
     const outcome = await assessPronunciation(wav, "你好");
     expect(outcome).toMatchObject({ status: "ok", scores: { pron: 91 } });
     const [call] = calls;
@@ -72,7 +72,7 @@ describe("Azure Speech client", () => {
       n++ === 0
         ? new Response("multilingual not supported here", { status: 400 })
         : Response.json({ combinedPhrases: [{ text: "How do I say 你好?" }] });
-    const { transcribe } = await import("@/lib/speech/azure");
+    const { azureTranscribe: transcribe } = await import("@/lib/speech/azure");
     expect(await transcribe(wav)).toBe("How do I say 你好?");
     expect(calls).toHaveLength(2);
     expect(calls[0]!.url).toBe(
@@ -91,7 +91,7 @@ describe("Azure Speech client", () => {
         ? Response.json({ RecognitionStatus: "Success", NBest: [{ Display: "谢谢。", Confidence: 0.91 }] })
         : Response.json({ RecognitionStatus: "Success", NBest: [{ Display: "Shea shea.", Confidence: 0.42 }] });
     };
-    const { transcribe } = await import("@/lib/speech/azure");
+    const { azureTranscribe: transcribe } = await import("@/lib/speech/azure");
     expect(await transcribe(wav)).toBe("谢谢。");
     expect(calls.map((c) => new URL(c.url).searchParams.get("language") ?? "fast")).toEqual(["fast", "fast", "en-US", "zh-CN"]);
 
@@ -103,7 +103,8 @@ describe("Azure Speech client", () => {
 
   it("explains a rejected key", async () => {
     nextResponse = () => new Response("unauthorized", { status: 401 });
-    const { synthesize, SpeechError } = await import("@/lib/speech/azure");
+    const { azureSynthesize: synthesize } = await import("@/lib/speech/azure");
+    const { SpeechError } = await import("@/lib/speech/http");
     const error = await synthesize([{ lang: "en", text: "hi" }], false).catch((e: unknown) => e);
     expect(error).toBeInstanceOf(SpeechError);
     expect((error as InstanceType<typeof SpeechError>).userMessage).toMatch(/AZURE_SPEECH_KEY/);

@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { type NextRequest } from "next/server";
 import { z } from "zod";
 import { handleRouteError, jsonError } from "@/lib/api";
-import { synthesize } from "@/lib/speech/azure";
+import { synthesize } from "@/lib/speech";
 import type { TtsRequest } from "@/lib/types";
 
 const Body = z.object({

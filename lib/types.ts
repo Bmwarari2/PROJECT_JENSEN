@@ -42,10 +42,18 @@ export interface PronunciationPhoneme {
 export interface PronunciationWord {
   text: string;
   accuracy: number | null;
-  /** Azure's ErrorType: None, Mispronunciation, Omission, Insertion, ... */
+  /** None, Mispronunciation, Omission, Insertion, Tone (clarity check), ... */
   errorType: string;
   phonemes: PronunciationPhoneme[];
+  /** Clarity check only: what the recogniser heard here, e.g. "歇 xiē". */
+  heard?: string;
 }
+
+/**
+ * "assessment": Azure pronunciation assessment (phoneme-level scores).
+ * "recognition": clarity check from ElevenLabs speech recognition.
+ */
+export type PronunciationMethod = "assessment" | "recognition";
 
 export interface PronunciationScores {
   pron: number | null;
@@ -61,6 +69,7 @@ export interface PronunciationResult {
   scores: PronunciationScores;
   words: PronunciationWord[];
   passed: boolean;
+  method: PronunciationMethod;
 }
 
 /** What the UI renders for a stored message (messages.display). */

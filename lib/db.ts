@@ -4,7 +4,7 @@ import type { Database, Json } from "@/lib/database.types";
 import { dbEnv } from "@/lib/env";
 import { scheduleAfterAttempt, strengthOf } from "@/lib/srs";
 import { TOTAL_UNITS } from "@/lib/curriculum";
-import type { ChineseItem, ChatMessageDTO, DisplayMessage, PronunciationWord } from "@/lib/types";
+import type { ChineseItem, ChatMessageDTO, DisplayMessage, PronunciationMethod, PronunciationWord } from "@/lib/types";
 
 type Tables = Database["public"]["Tables"];
 export type ConversationRow = Tables["conversations"]["Row"];
@@ -187,6 +187,7 @@ export interface NewAttempt {
   recognized: string;
   scores: { pron: number | null; accuracy: number | null; fluency: number | null; completeness: number | null };
   words: PronunciationWord[];
+  method: PronunciationMethod;
 }
 
 /** Save an attempt and reschedule the practised word. Returns the attempt id and pass/fail. */
@@ -206,6 +207,7 @@ export async function recordAttempt(attempt: NewAttempt): Promise<{ id: number; 
         fluency_score: attempt.scores.fluency,
         completeness_score: attempt.scores.completeness,
         words: attempt.words as unknown as Json,
+        method: attempt.method,
       })
       .select("id")
       .single(),

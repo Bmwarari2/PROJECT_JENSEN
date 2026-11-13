@@ -82,6 +82,7 @@ describe("attempt formatting", () => {
     fluency_score: 88,
     completeness_score: 100,
     words: [{ text: "谢谢", accuracy: 60, errorType: "Mispronunciation", phonemes: [{ phoneme: "x ie 4", accuracy: 55 }] }],
+    method: "assessment" as const,
   };
 
   it("turns a stored row into a result", () => {
@@ -95,5 +96,16 @@ describe("attempt formatting", () => {
     expect(text).toContain("Target: 谢谢 (xiè xie) = thank you");
     expect(text).toContain("Overall 66/100");
     expect(text).toContain("- 谢谢: 60 (Mispronunciation); sounds: x ie 4 55");
+  });
+
+  it("labels clarity checks and shows what was heard", () => {
+    const text = attemptMessage({
+      ...attemptRowToResult({ ...row, method: "recognition" }),
+      words: [{ text: "谢", accuracy: 45, errorType: "Tone", phonemes: [], heard: "歇 xiē" }],
+    });
+    expect(text).toContain("[Pronunciation attempt: clarity check]");
+    expect(text).toContain("Recogniser heard:");
+    expect(text).toContain("- 谢: 45 (Tone); heard 歇 xiē");
+    expect(text).not.toContain("fluency");
   });
 });

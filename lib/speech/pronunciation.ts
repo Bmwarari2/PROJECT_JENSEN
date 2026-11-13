@@ -96,6 +96,7 @@ export function attemptRowToResult(row: {
   fluency_score: number | null;
   completeness_score: number | null;
   words: unknown;
+  method: PronunciationResult["method"];
 }): PronunciationResult {
   const target: ChineseItem = { hanzi: row.target_hanzi, pinyin: row.target_pinyin, english: row.target_english };
   return {
@@ -110,5 +111,6 @@ export function attemptRowToResult(row: {
     },
     words: Array.isArray(row.words) ? (row.words as PronunciationWord[]) : [],
     passed: row.pron_score !== null && row.pron_score >= PASS_SCORE,
+    method: row.method,
   };
 }

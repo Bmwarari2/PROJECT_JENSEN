@@ -100,6 +100,7 @@ export type Database = {
           fluency_score: number | null;
           completeness_score: number | null;
           words: Json;
+          method: "assessment" | "recognition";
         },
         {
           conversation_id?: string | null;
@@ -112,6 +113,7 @@ export type Database = {
           fluency_score?: number | null;
           completeness_score?: number | null;
           words?: Json;
+          method?: "assessment" | "recognition";
         }
       >;
     };

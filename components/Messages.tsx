@@ -107,7 +107,15 @@ export function AttemptMessage({ result, showPinyin }: { result: PronunciationRe
           </div>
           <div className="attempt-target">
             <ChineseText hanzi={result.target.hanzi} pinyin={result.target.pinyin} showPinyin={showPinyin} size="md" />
-            <span className="attempt-label">{scoreLabel(score)}</span>
+            <span className="attempt-label">
+              {scoreLabel(score)}
+              {result.method === "recognition" && (
+                <span className="attempt-method" title="Scored by how clearly a Chinese speech recogniser understood each character">
+                  {" "}
+                  · clarity check
+                </span>
+              )}
+            </span>
           </div>
         </div>
         {result.words.length > 0 && (
@@ -116,10 +124,18 @@ export function AttemptMessage({ result, showPinyin }: { result: PronunciationRe
               <span
                 key={i}
                 className={`word-score ${scoreClass(w.accuracy)}`}
-                title={w.errorType !== "None" ? w.errorType : undefined}
+                title={[w.errorType !== "None" ? w.errorType : "", w.heard ? `heard ${w.heard}` : ""].filter(Boolean).join(" · ") || undefined}
               >
                 <span lang="zh-CN">{w.text}</span>
-                <small>{w.errorType === "Omission" ? "missed" : w.accuracy === null ? "–" : Math.round(w.accuracy)}</small>
+                <small>
+                  {w.errorType === "Omission"
+                    ? "missed"
+                    : w.errorType === "Tone"
+                      ? "tone"
+                      : w.accuracy === null
+                        ? "–"
+                        : Math.round(w.accuracy)}
+                </small>
               </span>
             ))}
           </div>
