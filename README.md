@@ -64,9 +64,10 @@ Browsers allow the microphone on `localhost` without HTTPS, so voice works local
 1. Push this repository to GitHub (already done if you're reading this there).
 2. In Railway: **New Project → Deploy from GitHub repo**, and pick this repository and branch.
 3. In the service's **Variables** tab, add everything from `.env.example`: `APP_PASSWORD`, `SESSION_SECRET` (generate it with `openssl rand -base64 48`), `ANTHROPIC_API_KEY`, `AZURE_SPEECH_KEY`, `AZURE_SPEECH_REGION`, `SUPABASE_URL`, and `SUPABASE_SECRET_KEY`.
-4. **Settings → Networking → Generate Domain** gives you an HTTPS URL.
+4. In **Settings**, set the start command to `npm start`, the build command to `npm run build`, and the healthcheck path to `/api/health`. (Railway detects Next.js on its own; these settings just make it explicit.)
+5. **Settings → Networking → Generate Domain** gives you an HTTPS URL.
 
-`railway.json` sets the build and start commands and a health check at `/api/health`. Open the URL, sign in with your password, and tap **Start lesson**.
+Open the URL, sign in with your password, and tap **Start lesson**.
 
 ## Configuration
 
