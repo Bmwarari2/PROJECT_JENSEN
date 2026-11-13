@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { ConfigError } from "@/lib/env";
 import { DatabaseError } from "@/lib/db";
 import { TutorError } from "@/lib/tutor/engine";
-import { SpeechError } from "@/lib/speech/http";
+import { SpeechError } from "@/lib/speech/azure";
 import { readWavInfo, SAMPLE_RATE } from "@/lib/wav";
 
 export function jsonError(status: number, error: string) {

@@ -1,4 +1,4 @@
-// Hand-written to match supabase/migrations/20261113000000_init.sql, in the
+// Hand-written to match supabase/migrations/20261113113124_init.sql, in the
 // shape `supabase gen types typescript` produces. Regenerate with the CLI if
 // you change the schema.
 
@@ -100,7 +100,6 @@ export type Database = {
           fluency_score: number | null;
           completeness_score: number | null;
           words: Json;
-          method: "assessment" | "recognition";
         },
         {
           conversation_id?: string | null;
@@ -113,7 +112,6 @@ export type Database = {
           fluency_score?: number | null;
           completeness_score?: number | null;
           words?: Json;
-          method?: "assessment" | "recognition";
         }
       >;
     };

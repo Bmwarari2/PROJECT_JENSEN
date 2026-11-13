@@ -486,10 +486,6 @@ button:not(:disabled) {
   color: var(--text-2);
 }
 
-.attempt-method {
-  color: var(--text-3);
-}
-
 .score-ring {
   display: grid;
   place-items: center;

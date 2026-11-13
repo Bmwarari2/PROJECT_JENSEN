@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { BadRequest, handleRouteError, jsonError, readWavField } from "@/lib/api";
-import { assessPronunciation } from "@/lib/speech";
+import { assessPronunciation } from "@/lib/speech/azure";
 import { recordAttempt } from "@/lib/db";
 import { containsHan } from "@/lib/pinyin";
 import type { PronunciationResult } from "@/lib/types";
@@ -24,10 +24,10 @@ export async function POST(request: NextRequest) {
     if (!containsHan(target.hanzi)) throw new BadRequest("Missing the Chinese text to practise.");
     const rawConversationId = field(form, "conversationId", 64);
     const conversationId = UUID.test(rawConversationId) ? rawConversationId : null;
-    // Azure scores at most 30 seconds of audio per request (and practice items are short).
+    // Azure scores at most 30 seconds of audio per request.
     const wav = await readWavField(form, "audio", 30);
 
-    const { outcome, method } = await assessPronunciation(wav, target.hanzi);
+    const outcome = await assessPronunciation(wav, target.hanzi);
     if (outcome.status === "no_speech") {
       return jsonError(422, "I couldn't hear anything. Check your mic and try again.");
     }
@@ -45,7 +45,6 @@ export async function POST(request: NextRequest) {
       recognized: outcome.recognized,
       scores: outcome.scores,
       words: outcome.words,
-      method,
     });
     const result: PronunciationResult = {
       attemptId: saved.id,
@@ -54,7 +53,6 @@ export async function POST(request: NextRequest) {
       scores: outcome.scores,
       words: outcome.words,
       passed: saved.passed,
-      method,
     };
     return NextResponse.json(result);
   } catch (error) {

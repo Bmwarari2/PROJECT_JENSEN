@@ -26,9 +26,7 @@ const claudeSchema = z.object({
   ),
 });
 
-const unsetIfBlank = (v: unknown) => (typeof v === "string" && v.trim() === "" ? undefined : v);
-
-const azureSchema = z.object({
+const speechSchema = z.object({
   AZURE_SPEECH_KEY: nonEmpty,
   AZURE_SPEECH_REGION: nonEmpty.transform((s) => s.toLowerCase()),
   TTS_VOICE_EN: withDefault("en-US-AvaMultilingualNeural"),
@@ -44,24 +42,6 @@ const azureSchema = z.object({
         .map((l) => l.trim())
         .filter(Boolean),
     ),
-});
-
-const elevenLabsSchema = z
-  .object({
-    ELEVENLABS_API_KEY: nonEmpty,
-    // "George", the voice used in ElevenLabs' own examples, so it exists on
-    // every account. Pick any voice from your ElevenLabs voice library.
-    ELEVENLABS_VOICE_ID: withDefault("JBFqnCBsd6RMkjVDRZzb"),
-    // Optional separate voice for Chinese (e.g. a native Mandarin speaker).
-    ELEVENLABS_VOICE_ID_ZH: z.preprocess(unsetIfBlank, nonEmpty.optional()),
-    ELEVENLABS_TTS_MODEL: withDefault("eleven_v4"),
-    ELEVENLABS_STT_MODEL: withDefault("scribe_v3"),
-  })
-  .transform((v) => ({ ...v, ELEVENLABS_VOICE_ID_ZH: v.ELEVENLABS_VOICE_ID_ZH ?? v.ELEVENLABS_VOICE_ID }));
-
-const providerSchema = z.object({
-  STT_PROVIDER: z.preprocess(unsetIfBlank, z.enum(["elevenlabs", "azure"]).optional()),
-  TTS_PROVIDER: z.preprocess(unsetIfBlank, z.enum(["elevenlabs", "azure"]).optional()),
 });
 
 const dbSchema = z
@@ -83,9 +63,8 @@ const dbSchema = z
   });
 
 export class ConfigError extends Error {
-  constructor(group: string, issues: z.core.$ZodIssue[] | string) {
-    const detail =
-      typeof issues === "string" ? issues : issues.map((i) => `${i.path.join(".") || "env"}: ${i.message}`).join("; ");
+  constructor(group: string, issues: z.core.$ZodIssue[]) {
+    const detail = issues.map((i) => `${i.path.join(".") || "env"}: ${i.message}`).join("; ");
     super(`Missing or invalid ${group} configuration — ${detail}`);
     this.name = "ConfigError";
   }
@@ -103,48 +82,5 @@ function loader<S extends z.ZodType>(group: string, schema: S): () => z.output<S
 }
 
 export const claudeEnv = loader("Claude", claudeSchema);
-export const azureEnv = loader("Azure Speech", azureSchema);
-export const elevenLabsEnv = loader("ElevenLabs", elevenLabsSchema);
+export const speechEnv = loader("Azure Speech", speechSchema);
 export const dbEnv = loader("Supabase", dbSchema);
-const providerEnv = loader("speech provider", providerSchema);
-
-const isSet = (name: string) => Boolean(process.env[name]?.trim());
-
-export type SpeechProvider = "elevenlabs" | "azure";
-
-export interface SpeechSetup {
-  /** Transcribes what you say in conversation. */
-  stt: SpeechProvider;
-  /** Reads the tutor's replies aloud. */
-  tts: SpeechProvider;
-  /** Scores practice attempts: Azure's assessment if available, else an ElevenLabs clarity check. */
-  pronunciation: SpeechProvider;
-}
-
-/**
- * Which service does what. With only ElevenLabs configured it does
- * everything; adding Azure keys upgrades pronunciation scoring to Azure's
- * phoneme-level assessment. STT_PROVIDER / TTS_PROVIDER override the defaults.
- */
-export function speechSetup(): SpeechSetup {
-  const has = {
-    elevenlabs: isSet("ELEVENLABS_API_KEY"),
-    azure: isSet("AZURE_SPEECH_KEY") && isSet("AZURE_SPEECH_REGION"),
-  };
-  if (!has.elevenlabs && !has.azure) {
-    throw new ConfigError("speech", "set ELEVENLABS_API_KEY, or AZURE_SPEECH_KEY and AZURE_SPEECH_REGION");
-  }
-  const preferred: SpeechProvider = has.elevenlabs ? "elevenlabs" : "azure";
-  const { STT_PROVIDER, TTS_PROVIDER } = providerEnv();
-  const setup: SpeechSetup = {
-    stt: STT_PROVIDER ?? preferred,
-    tts: TTS_PROVIDER ?? preferred,
-    pronunciation: has.azure ? "azure" : "elevenlabs",
-  };
-  for (const [role, provider] of Object.entries(setup) as Array<[string, SpeechProvider]>) {
-    if (!has[provider]) {
-      throw new ConfigError("speech", `${role} is set to use ${provider}, but its keys aren't configured`);
-    }
-  }
-  return setup;
-}
